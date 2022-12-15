@@ -2,20 +2,23 @@ server:
   error:
     include-message: always
     include-binding-errors: always
-  servlet:
-    context-path: /api
+
+logging:
+  level:
+    "[org.hibernate.SQL]": DEBUG
+    "[org.hibernate.type]": TRACE
 
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/travelling
+    url: jdbc:postgresql://localhost:5432/travelling_test
     username: dba
     password: dba
 
   jpa:
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: none
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
-        "[format_sql]": false
-    show-sql: false
+        "[format_sql]": true
+    show-sql: true
