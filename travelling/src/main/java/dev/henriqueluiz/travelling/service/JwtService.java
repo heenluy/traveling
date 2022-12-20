@@ -35,7 +35,7 @@ public class JwtService {
         JwtClaimsSet claims = JwtClaimsSet.builder()
             .issuer("self")
             .issuedAt(now)
-            .expiresAt(now.plus(30, ChronoUnit.SECONDS))
+            .expiresAt(now.plus(25, ChronoUnit.MINUTES))
             .subject(authentication.getName())
             .claim("scope", scope)
             .build();
@@ -54,41 +54,37 @@ public class JwtService {
 
     public Map<String, String> useRefreshToken(String tokenValue) {
         RefreshToken token = tokenService.getRefreshToken(tokenValue);
-        Map<String, String> tokens = new HashMap<>();
-
-        if (tokenService.isValidToken(token)) {
-            Instant now = Instant.now();
-            AppUser user = token.getUser();
-            
-            List<String> scope = user.getAuthorities().stream()
-                .map(r -> r.getName())
-                .collect(Collectors.toList());
-
-            JwtClaimsSet claims = JwtClaimsSet.builder()
-                .issuer("self")
-                .issuedAt(now)
-                .expiresAt(now.plus(30, ChronoUnit.SECONDS)) // MINUTES
-                .subject(user.getEmail())
-                .claim("scope", scope)
-                .build();
-
-            token.setEnabled(false);
-            String accessToken = this.encoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
-            String refreshToken = UUID.randomUUID().toString();
-            
-            tokenService.saveToken(refreshToken, user.getEmail());
-            tokens.put("access_token", accessToken);
-            tokens.put("refresh_token", refreshToken);
-            return tokens;
-        }
+        tokenService.isValidToken(token);
         
-        return null;
+        Map<String, String> tokens = new HashMap<>();
+        Instant now = Instant.now();
+        AppUser user = token.getUser();
+        
+        List<String> scope = user.getAuthorities().stream()
+            .map(r -> r.getName())
+            .collect(Collectors.toList());
+
+        JwtClaimsSet claims = JwtClaimsSet.builder()
+            .issuer("self")
+            .issuedAt(now)
+            .expiresAt(now.plus(25, ChronoUnit.MINUTES))
+            .subject(user.getEmail())
+            .claim("scope", scope)
+            .build();
+
+        token.setEnabled(false);
+        String accessToken = this.encoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
+        String refreshToken = UUID.randomUUID().toString();
+        
+        tokenService.saveToken(refreshToken, user.getEmail());
+        tokens.put("access_token", accessToken);
+        tokens.put("refresh_token", refreshToken);
+        return tokens;
     }
 
-    // TODO: Mudar o tempo de duração do token.
-    // TODO: Melhorar o método 'useRefreshToken'.
     // TODO: Criptografar o refresh token.
     // TODO: Criar DTOs.
+    // TODO: Tratamento de excessões
     // TODO: Fazer os testes.
     // TODO: Criar o recurso 'Travel'. 
 }

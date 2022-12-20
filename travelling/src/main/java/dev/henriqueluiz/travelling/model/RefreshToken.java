@@ -35,7 +35,7 @@ public class RefreshToken {
 
     @JsonProperty("refresh_token")
     private String token;
-    private Instant validUtil = Instant.now().plus(40, ChronoUnit.SECONDS);
+    private Instant validUtil = Instant.now().plus(3, ChronoUnit.DAYS);
     private Boolean enabled = true;
 
     @ManyToOne
