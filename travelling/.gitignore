@@ -33,3 +33,6 @@ build/
 
 ### Keys ###
 *.pem
+
+### Util ###
+decode.txt
