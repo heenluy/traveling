@@ -7,7 +7,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import dev.henriqueluiz.travelling.security.RSAProperties;
 
 @SpringBootApplication
-@EnableConfigurationProperties(RSAProperties.class)
+@EnableConfigurationProperties({RSAProperties.class})
 public class TravellingApplication {
 
 	public static void main(String[] args) {
