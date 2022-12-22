@@ -1,6 +1,7 @@
 package dev.henriqueluiz.travelling.api;
 
 import java.net.URI;
+import java.util.List;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,6 +14,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import dev.henriqueluiz.travelling.model.AppRole;
 import dev.henriqueluiz.travelling.model.AppUser;
+import dev.henriqueluiz.travelling.model.util.UserResponse;
 import dev.henriqueluiz.travelling.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -24,8 +26,8 @@ public class UserApi {
     private final UserService userService;
 
     @PostMapping("users/save")
-    public ResponseEntity<AppUser> saveUser(@RequestBody @Valid AppUser entity) {
-        AppUser user = userService.saveUser(entity);
+    public ResponseEntity<UserResponse> saveUser(@RequestBody @Valid AppUser entity) {
+        AppUser user = userService.saveUser(entity);  
         URI uri = URI.create(
             ServletUriComponentsBuilder
                 .fromCurrentContextPath()
@@ -33,7 +35,10 @@ public class UserApi {
                 .path("/users/save")
                 .toUriString()
         );
-        return ResponseEntity.created(uri).body(user);
+
+        List<String> authorities = user.getAuthorities().stream().toList();
+        UserResponse userResponse = new UserResponse(user.getFirstName(), user.getLastName(), user.getEmail(), authorities);
+        return ResponseEntity.created(uri).body(userResponse);
     }
 
     @PostMapping("roles/save")
@@ -57,8 +62,10 @@ public class UserApi {
     }
     
     @GetMapping("users/get-by-email")
-    public ResponseEntity<AppUser> getMethodName(@RequestParam String email) {
-        return ResponseEntity.ok(userService.getUserByEmail(email));
-    }
-    
+    public ResponseEntity<UserResponse> getMethodName(@RequestParam String email) {
+        AppUser user = userService.getUserByEmail(email);
+        List<String> authorities = user.getAuthorities().stream().toList();
+        UserResponse userResponse = new UserResponse(user.getFirstName(), user.getLastName(), user.getEmail(), authorities);
+        return ResponseEntity.ok(userResponse);
+    }   
 }

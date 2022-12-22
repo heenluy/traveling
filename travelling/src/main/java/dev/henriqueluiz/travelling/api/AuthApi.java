@@ -14,8 +14,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import dev.henriqueluiz.travelling.model.LoginRequest;
-import dev.henriqueluiz.travelling.model.RefreshToken;
+import dev.henriqueluiz.travelling.model.util.LoginRequest;
+import dev.henriqueluiz.travelling.model.util.RefreshToken;
 import dev.henriqueluiz.travelling.service.JwtService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

@@ -2,6 +2,8 @@ package dev.henriqueluiz.travelling.model;
 
 import static jakarta.persistence.GenerationType.SEQUENCE;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
@@ -25,6 +27,7 @@ public class AppRole {
         sequenceName = "role_id_seq",
         allocationSize = 1
     )
+    @JsonIgnore
     private Long roleId;
 
     @NotBlank

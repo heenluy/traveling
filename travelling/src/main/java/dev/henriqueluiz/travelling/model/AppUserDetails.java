@@ -27,7 +27,7 @@ public class AppUserDetails implements UserDetails {
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return user.getAuthorities().stream()
-            .map(role -> new SimpleGrantedAuthority(role.getName()))
+            .map(SimpleGrantedAuthority::new)
             .collect(Collectors.toList());
     }
 

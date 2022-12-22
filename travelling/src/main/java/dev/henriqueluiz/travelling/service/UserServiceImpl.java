@@ -50,7 +50,7 @@ public class UserServiceImpl implements UserService {
             return new EntityNotFoundException(String.format("User not found: '%s'", email));
         });
 
-        user.getAuthorities().add(role);
+        user.getAuthorities().add(role.getName());
         LOG.debug("Role was been added successfuly");
     }
     

@@ -1,6 +1,5 @@
 package dev.henriqueluiz.travelling.model;
 
-import static jakarta.persistence.FetchType.EAGER;
 import static jakarta.persistence.GenerationType.SEQUENCE;
 
 import java.util.ArrayList;
@@ -11,7 +10,6 @@ import org.hibernate.validator.constraints.Length;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
-import jakarta.persistence.ManyToMany;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -48,9 +46,7 @@ public class AppUser {
     @NotBlank
     @Length(min = 6)
     private String password;
-
-    @ManyToMany(fetch = EAGER)
-    private Collection<AppRole> authorities = new ArrayList<>();
+    private Collection<String> authorities = new ArrayList<>();
 
     public Long getUserId() {
         return userId;
@@ -92,11 +88,11 @@ public class AppUser {
         this.password = password;
     }
 
-    public Collection<AppRole> getAuthorities() {
+    public Collection<String> getAuthorities() {
         return authorities;
     }
 
-    public void setAuthorities(Collection<AppRole> authorities) {
+    public void setAuthorities(Collection<String> authorities) {
         this.authorities = authorities;
     }
 

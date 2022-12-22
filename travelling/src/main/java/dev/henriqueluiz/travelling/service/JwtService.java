@@ -9,6 +9,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -25,13 +27,15 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class JwtService {
+    private final static Logger LOG = LoggerFactory.getLogger(JwtService.class);
+
     private final JwtEncoder encoder;
     private final JwtDecoder decoder;
     private final UserRepo userRepo;
 
     public Map<String, String> getAccessToken(Authentication authentication) {
-        Instant now = Instant.now();
-        
+        LOG.debug("Generating tokens to: '{}'", authentication.getName());
+        Instant now = Instant.now();       
         List<String> scope = authentication.getAuthorities().stream()
         .map(GrantedAuthority::getAuthority)
         .collect(Collectors.toList());
@@ -65,11 +69,11 @@ public class JwtService {
     }
 
     public Map<String, String> refreshToken(String token) {    
-        Instant now = Instant.now();
         AppUser user = tokenUtil(token);
-        List<String> scope = user.getAuthorities().stream()
-            .map(role -> role.getName())
-            .toList();
+        LOG.debug("Refreshing tokens to: '{}'", user.getEmail());
+        
+        Instant now = Instant.now();
+        List<String> scope = user.getAuthorities().stream().toList();
 
         JwtClaimsSet accessClaims = JwtClaimsSet.builder()
             .issuer("self")
@@ -100,7 +104,6 @@ public class JwtService {
     }
 
     private AppUser tokenUtil(String token) {
-        // LOG
         Jwt jwt = this.decoder.decode(token);
         String email = Objects.requireNonNull(jwt.getSubject());
         Instant expiresAt = Objects.requireNonNull(jwt.getExpiresAt());    
@@ -112,9 +115,4 @@ public class JwtService {
         return userRepo.findByEmail(email)
             .orElseThrow();
     }
-
-    // TODO: Criar DTOs.
-    // TODO: Tratamento de exceções
-    // TODO: Fazer os testes.
-    // TODO: Criar o recurso 'Travel'. 
 }

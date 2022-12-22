@@ -1,4 +1,4 @@
-package dev.henriqueluiz.travelling.model;
+package dev.henriqueluiz.travelling.model.util;
 
 import jakarta.validation.constraints.NotBlank;
 
