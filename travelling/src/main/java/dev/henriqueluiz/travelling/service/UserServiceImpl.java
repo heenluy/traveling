@@ -2,14 +2,15 @@ package dev.henriqueluiz.travelling.service;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import dev.henriqueluiz.travelling.exception.entity.RoleNotFoundException;
 import dev.henriqueluiz.travelling.model.AppRole;
 import dev.henriqueluiz.travelling.model.AppUser;
 import dev.henriqueluiz.travelling.repository.RoleRepo;
 import dev.henriqueluiz.travelling.repository.UserRepo;
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
@@ -42,12 +43,12 @@ public class UserServiceImpl implements UserService {
 
         AppRole role = roleRepo.findByName(roleName).orElseThrow(() -> {
             LOG.error("Role not found: '{}'", roleName);
-            return new EntityNotFoundException(String.format("Role not found: '%s'", roleName));
+            return new RoleNotFoundException(String.format("Role not found: '%s'", roleName));
         });
 
         AppUser user = userRepo.findByEmail(email).orElseThrow(() -> {
             LOG.error("User not found: '{}'", email);
-            return new EntityNotFoundException(String.format("User not found: '%s'", email));
+            return new UsernameNotFoundException(String.format("User not found: '%s'", email));
         });
 
         user.getAuthorities().add(role.getName());
@@ -59,7 +60,7 @@ public class UserServiceImpl implements UserService {
         LOG.debug("Fetching user: '{}'", email);
         return userRepo.findByEmail(email).orElseThrow(() -> {
             LOG.error("User not found: '{}'", email);
-            return new EntityNotFoundException(String.format("User not found: '%s'", email));
+            return new UsernameNotFoundException(String.format("User not found: '%s'", email));
         });
     }
 }
