@@ -13,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
@@ -20,6 +21,7 @@ import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 import org.springframework.stereotype.Service;
 
+import dev.henriqueluiz.travelling.exception.entity.InvalidTokenException;
 import dev.henriqueluiz.travelling.model.AppUser;
 import dev.henriqueluiz.travelling.repository.UserRepo;
 import lombok.RequiredArgsConstructor;
@@ -69,7 +71,7 @@ public class JwtService {
     }
 
     public Map<String, String> refreshToken(String token) {    
-        AppUser user = tokenUtil(token);
+        AppUser user = getUserByToken(token);
         LOG.debug("Refreshing tokens to: '{}'", user.getEmail());
         
         Instant now = Instant.now();
@@ -103,16 +105,18 @@ public class JwtService {
         return tokens;
     }
 
-    private AppUser tokenUtil(String token) {
+    private AppUser getUserByToken(String token) {
         Jwt jwt = this.decoder.decode(token);
         String email = Objects.requireNonNull(jwt.getSubject());
         Instant expiresAt = Objects.requireNonNull(jwt.getExpiresAt());    
         
         if((expiresAt.isBefore(Instant.now()))) {
-            throw new RuntimeException("Token is not valid");
+            throw new InvalidTokenException("Token is not valid");
         }
 
-        return userRepo.findByEmail(email)
-            .orElseThrow();
+        return userRepo.findByEmail(email).orElseThrow(() -> {
+            LOG.error("User not found: '{}'", email);
+            return new UsernameNotFoundException(String.format("User not found: '%s'", email));
+        });
     }
 }
