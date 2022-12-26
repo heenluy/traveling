@@ -23,7 +23,7 @@ CREATE TABLE app_user (
     last_name VARCHAR(32) NOT NULL,
     email VARCHAR(48) NOT NULL,
     password VARCHAR(255) NOT NULL,
-    authorities TEXT[],
+    authorities TEXT [] NOT NULL DEFAULT ARRAY[''],
     PRIMARY KEY(user_id)
 );
 
