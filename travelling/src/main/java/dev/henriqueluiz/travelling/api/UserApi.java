@@ -14,7 +14,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import dev.henriqueluiz.travelling.model.AppRole;
 import dev.henriqueluiz.travelling.model.AppUser;
-import dev.henriqueluiz.travelling.model.util.UserResponse;
+import dev.henriqueluiz.travelling.model.mapper.UserResponse;
 import dev.henriqueluiz.travelling.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

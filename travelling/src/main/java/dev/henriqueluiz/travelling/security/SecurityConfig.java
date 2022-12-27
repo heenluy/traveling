@@ -33,10 +33,10 @@ import lombok.RequiredArgsConstructor;
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
-    private final RSAProperties keys;
+    private final RSAProperties rsaKeys;
 
     @Bean
-    public AuthenticationManager autheManager(UserDetailsService detailsService, PasswordEncoder passwordEncoder) {
+    public AuthenticationManager authManager(UserDetailsService detailsService, PasswordEncoder passwordEncoder) {
         var authProvider = new DaoAuthenticationProvider();
         authProvider.setUserDetailsService(detailsService);
         authProvider.setPasswordEncoder(passwordEncoder);
@@ -53,7 +53,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(
                 auth -> auth
                     .requestMatchers("/users/save", "/roles/save", "/roles/add-to-user").permitAll()
-                    .requestMatchers("/token", "/refresh").permitAll()
+                    .requestMatchers("/token", "/refresh", "/actuator/**").permitAll()
                     .requestMatchers("/users/get-by-email").hasAuthority("SCOPE_manager")
                     .anyRequest().authenticated())
             .build();
@@ -66,12 +66,12 @@ public class SecurityConfig {
 
     @Bean
     public JwtDecoder jwtDecoder() {
-        return NimbusJwtDecoder.withPublicKey(keys.publicKey()).build();
+        return NimbusJwtDecoder.withPublicKey(rsaKeys.publicKey()).build();
     }
 
     @Bean
     public JwtEncoder jwtEncoder() {
-        JWK jwk = new RSAKey.Builder(keys.publicKey()).privateKey(keys.privateKey()).build();
+        JWK jwk = new RSAKey.Builder(rsaKeys.publicKey()).privateKey(rsaKeys.privateKey()).build();
         JWKSource<SecurityContext> jwks = new ImmutableJWKSet<>(new JWKSet(jwk));
         return new NimbusJwtEncoder(jwks);
     }

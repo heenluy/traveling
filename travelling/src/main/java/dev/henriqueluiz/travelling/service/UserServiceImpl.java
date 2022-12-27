@@ -52,7 +52,7 @@ public class UserServiceImpl implements UserService {
         });
 
         user.getAuthorities().add(role.getName());
-        LOG.debug("Role has been added successfuly");
+        LOG.debug("Role has been added successfully");
     }
     
     @Override

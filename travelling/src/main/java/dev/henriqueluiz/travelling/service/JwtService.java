@@ -39,8 +39,8 @@ public class JwtService {
         LOG.debug("Generating tokens to: '{}'", authentication.getName());
         Instant now = Instant.now();       
         List<String> scope = authentication.getAuthorities().stream()
-        .map(GrantedAuthority::getAuthority)
-        .collect(Collectors.toList());
+            .map(GrantedAuthority::getAuthority)
+            .collect(Collectors.toList());
         
         JwtClaimsSet accessClaims = JwtClaimsSet.builder()
             .issuer("self")
