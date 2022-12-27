@@ -80,9 +80,7 @@ public class UserServiceTest {
         executionPhase = AFTER_TEST_METHOD
     )
     void givenRoleNameAndUserEmail_whenCall_thenNoErrorShouldOccur() {
-        assertThatCode(
-            () -> userService.addRolesToUser("test", "test@mail.dev")
-        )
-        .doesNotThrowAnyException();
+        assertThatCode(() -> userService.addRolesToUser("test", "test@mail.dev"))
+            .doesNotThrowAnyException();
     }
 }
