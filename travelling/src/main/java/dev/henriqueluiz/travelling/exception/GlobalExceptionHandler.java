@@ -42,12 +42,22 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     @Nullable
     @ExceptionHandler(value = RoleNotFoundException.class)
-    protected ResponseEntity<Object> handleMethodEntityNotFound(RuntimeException ex, WebRequest request) {
+    protected ResponseEntity<Object> handleMethodRoleNotFound(RuntimeException ex, WebRequest request) {
         AbstractExceptionBody body = new AbstractExceptionBody();
         body.setStatus(404); 
         body.setTitle("Bad Request");
         body.setDetails("Role not found: " + request.getParameter("role"));      
         return super.handleExceptionInternal(ex, body, new HttpHeaders(), NOT_FOUND, request);
+    }
+
+    @Nullable
+    @ExceptionHandler(value = RoleNotAllowedException.class)
+    protected ResponseEntity<Object> handleMethodRoleNotAllowed(RuntimeException ex, WebRequest request) {
+        AbstractExceptionBody body = new AbstractExceptionBody();
+        body.setStatus(405);
+        body.setTitle("Role not allowed");
+        body.setDetails("Only managers can add manager or admin roles");
+        return super.handleExceptionInternal(ex, body, new HttpHeaders(), METHOD_NOT_ALLOWED, request);
     }
 
     @Nullable

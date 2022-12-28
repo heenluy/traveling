@@ -1,5 +1,6 @@
 package dev.henriqueluiz.travelling.service;
 
+import dev.henriqueluiz.travelling.exception.entity.RoleNotAllowedException;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +20,13 @@ public class UserServiceFailuresTest {
         Assertions.assertThatExceptionOfType(RoleNotFoundException.class)
             .isThrownBy(() -> service.addRolesToUser("dummy", "test@mail.dev"))
             .withMessage("Role not found: 'dummy'");
+    }
+
+    @Test
+    void givenManagerOrAdminRoleName_whenThrown_thenRoleNotAllowedExceptionIsExpected() {
+        Assertions.assertThatExceptionOfType(RoleNotAllowedException.class)
+                .isThrownBy(() -> service.addRolesToUser("manager", "test@mail.dev"))
+                .withMessage("Role not allowed: 'manager'");
     }
 
     @Test

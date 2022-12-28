@@ -52,9 +52,9 @@ public class SecurityConfig {
             .sessionManagement(session -> session.sessionCreationPolicy(STATELESS))
             .authorizeHttpRequests(
                 auth -> auth
-                    .requestMatchers("/users/save", "/roles/save", "/roles/add-to-user").permitAll()
+                    .requestMatchers("/users/save", "/roles/add-to-user").permitAll()
                     .requestMatchers("/token", "/refresh", "/actuator/**").permitAll()
-                    .requestMatchers("/users/get-by-email").hasAuthority("SCOPE_manager")
+                    .requestMatchers("/users/get-by-email", "/roles/save").hasAuthority("SCOPE_manager")
                     .anyRequest().authenticated())
             .build();
     }

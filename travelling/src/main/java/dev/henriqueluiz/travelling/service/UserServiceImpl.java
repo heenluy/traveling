@@ -1,5 +1,6 @@
 package dev.henriqueluiz.travelling.service;
 
+import dev.henriqueluiz.travelling.exception.entity.RoleNotAllowedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -40,6 +41,11 @@ public class UserServiceImpl implements UserService {
     @Override
     public void addRolesToUser(String roleName, String email) {
         LOG.debug("Adding '{}' to '{}'", roleName, email);
+
+        if (roleName.equals("manager") || roleName.equals("admin")) {
+            LOG.error("Role not allowed: '{}'", roleName);
+            throw new RoleNotAllowedException(String.format("Role not allowed: '%s'", roleName));
+        }
 
         AppRole role = roleRepo.findByName(roleName).orElseThrow(() -> {
             LOG.error("Role not found: '{}'", roleName);
