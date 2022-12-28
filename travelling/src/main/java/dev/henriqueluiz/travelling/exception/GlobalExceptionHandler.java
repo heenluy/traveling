@@ -1,6 +1,7 @@
 package dev.henriqueluiz.travelling.exception;
 
 import dev.henriqueluiz.travelling.exception.entity.*;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
@@ -16,8 +17,7 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 
 import java.util.List;
 
-import static org.springframework.http.HttpStatus.NOT_FOUND;
-import static org.springframework.http.HttpStatus.UNAUTHORIZED;
+import static org.springframework.http.HttpStatus.*;
 
 @ControllerAdvice
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
@@ -88,5 +88,15 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         body.setTitle("JWT rejected");
         body.setDetails("An error occurred while attempting to decode the Jwt");      
         return super.handleExceptionInternal(ex, body, new HttpHeaders(), UNAUTHORIZED, request);
+    }
+
+    @Nullable
+    @ExceptionHandler(value = DataIntegrityViolationException.class)
+    protected ResponseEntity<Object> handleMethodEmailAlreadyExists(RuntimeException ex, WebRequest request) {
+        AbstractExceptionBody body = new AbstractExceptionBody();
+        body.setStatus(400);
+        body.setTitle("Bad Request");
+        body.setDetails("This email already exists");
+        return super.handleExceptionInternal(ex, body, new HttpHeaders(), BAD_REQUEST, request);
     }
 }

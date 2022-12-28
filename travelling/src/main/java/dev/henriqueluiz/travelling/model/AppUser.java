@@ -1,22 +1,18 @@
 package dev.henriqueluiz.travelling.model;
 
-import static jakarta.persistence.GenerationType.SEQUENCE;
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.Collection;
 
-import org.hibernate.validator.constraints.Length;
-
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import jakarta.persistence.SequenceGenerator;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
+import static jakarta.persistence.GenerationType.SEQUENCE;
 
 @Entity
+@Table(name = "app_user", uniqueConstraints = {
+        @UniqueConstraint(name = "uc_user_email", columnNames = {"email"})
+})
 @NoArgsConstructor
 @AllArgsConstructor
 public class AppUser {
@@ -32,19 +28,9 @@ public class AppUser {
         allocationSize = 1
     )
     private Long userId;
-
-    @NotBlank
     private String firstName;
-
-    @NotBlank
     private String lastName;
-
-    @Email
-    @NotBlank
     private String email;
-
-    @NotBlank
-    @Length(min = 6)
     private String password;
     private Collection<String> authorities = new ArrayList<>();
 
