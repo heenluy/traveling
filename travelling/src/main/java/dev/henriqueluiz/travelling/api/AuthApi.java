@@ -7,6 +7,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -25,20 +26,16 @@ public class AuthApi {
     private final JwtService jwtService;
 
     @PostMapping("/token")
-    public Map<String, String> accessToken(@RequestBody @Valid LoginRequest req) {
+    public ResponseEntity<Map<String, String>> accessToken(@RequestBody @Valid LoginRequest req) {
         LOG.debug("Token requested for user: '{}'", req.email());
-        
-        Authentication authentication = authenticationManager.authenticate(
-            new UsernamePasswordAuthenticationToken(req.email(), req.password())
-        );
-
-        return jwtService.getAccessToken(authentication);
+        Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(req.email(), req.password()));
+        return ResponseEntity.accepted().body(jwtService.getAccessToken(authentication));
     }
 
     @GetMapping("/refresh")
-    public Map<String, String> refreshToken(@RequestBody @Valid RefreshToken token) {
+    public ResponseEntity<Map<String, String>> refreshToken(@RequestBody @Valid RefreshToken token) {
         LOG.debug("Access token was been requested");     
-        return jwtService.refreshToken(token.refreshToken());
+        return ResponseEntity.accepted().body(jwtService.refreshToken(token.refresh_token()));
     }
 
 }
