@@ -1,8 +1,11 @@
 package dev.henriqueluiz.travelling.api;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Stream;
 
+import dev.henriqueluiz.travelling.model.mapper.UserRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -26,8 +29,8 @@ public class UserApi {
     private final UserService userService;
 
     @PostMapping("users/save")
-    public ResponseEntity<UserResponse> saveUser(@RequestBody @Valid AppUser entity) {
-        AppUser user = userService.saveUser(entity);  
+    public ResponseEntity<UserResponse> saveUser(@RequestBody @Valid UserRequest body) {
+        AppUser user = userService.saveUser(requestToEntity(body));
         URI uri = URI.create(
             ServletUriComponentsBuilder
                 .fromCurrentContextPath()
@@ -67,5 +70,18 @@ public class UserApi {
         List<String> authorities = user.getAuthorities().stream().toList();
         UserResponse userResponse = new UserResponse(user.getFirstName(), user.getLastName(), user.getEmail(), authorities);
         return ResponseEntity.ok(userResponse);
-    }   
+    }
+
+    private AppUser requestToEntity(UserRequest request) {
+        return Stream.of(request)
+                .map(r -> new AppUser(
+                                null,
+                                r.firstName(),
+                                r.lastName(),
+                                r.email(),
+                                r.password(),
+                                new ArrayList<>()))
+                .findAny()
+                .orElseThrow();
+    }
 }
