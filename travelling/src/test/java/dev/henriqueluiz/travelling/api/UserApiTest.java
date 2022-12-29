@@ -10,6 +10,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
@@ -68,6 +69,7 @@ public class UserApiTest {
             scripts = { "deleteRole.sql" },
             executionPhase = AFTER_TEST_METHOD
     )
+    @WithMockUser(authorities = { "SCOPE_manager" })
     void givenRoleObject_whenCall_thenCreatedResponseStatusIsExpected() throws Exception {
         AppRole role = new AppRole(null, "test");
         String request = mapper.writeValueAsString(role);

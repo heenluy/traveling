@@ -1,16 +1,11 @@
 package dev.henriqueluiz.travelling.model;
 
-import static jakarta.persistence.GenerationType.SEQUENCE;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import jakarta.persistence.SequenceGenerator;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
+
+import static jakarta.persistence.GenerationType.SEQUENCE;
 
 @Entity
 @NoArgsConstructor
@@ -27,7 +22,7 @@ public class AppRole {
         sequenceName = "role_id_seq",
         allocationSize = 1
     )
-    @JsonIgnore
+    @Column(name = "role_id", nullable = false)
     private Long roleId;
 
     @NotBlank
@@ -67,10 +62,7 @@ public class AppRole {
             return false;
         AppRole other = (AppRole) obj;
         if (roleId == null) {
-            if (other.roleId != null)
-                return false;
-        } else if (!roleId.equals(other.roleId))
-            return false;
-        return true;
+            return other.roleId == null;
+        } else return roleId.equals(other.roleId);
     }
 }
