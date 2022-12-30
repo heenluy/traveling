@@ -5,7 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
 
-import java.math.BigInteger;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Objects;
 
@@ -31,7 +31,7 @@ public class Travel {
     private String destination;
     private LocalDate departureDate;
     private LocalDate returnDate;
-    private BigInteger budget;
+    private BigDecimal budget;
 
     @ManyToOne
     @JoinColumn(name = "user_id")
@@ -69,11 +69,11 @@ public class Travel {
         this.returnDate = returnDate;
     }
 
-    public BigInteger getBudget() {
+    public BigDecimal getBudget() {
         return budget;
     }
 
-    public void setBudget(BigInteger budget) {
+    public void setBudget(BigDecimal budget) {
         this.budget = budget;
     }
 

@@ -15,7 +15,7 @@ OWNED BY app_role.role_id;
 -- CREATES USER TABLE
 DROP SEQUENCE IF EXISTS user_id_seq CASCADE;
 CREATE SEQUENCE user_id_seq;
-DROP TABLE IF EXISTS app_user;
+DROP TABLE IF EXISTS app_user CASCADE;
 
 CREATE TABLE app_user (
     user_id INT8 NOT NULL DEFAULT nextval('user_id_seq'),
@@ -29,3 +29,19 @@ CREATE TABLE app_user (
 
 ALTER SEQUENCE user_id_seq
 OWNED BY app_user.user_id;
+
+-- CREATES TRAVEL TABLE
+DROP SEQUENCE IF EXISTS travel_id_seq CASCADE;
+CREATE SEQUENCE travel_id_seq;
+DROP TABLE IF EXISTS travel;
+
+CREATE TABLE travel (
+   travel_id INT8 NOT NULL DEFAULT nextval('travel_id_seq'),
+   destination VARCHAR(255),
+   departure_date DATE,
+   return_date DATE,
+   budget DECIMAL,
+   user_id INT8,
+   CONSTRAINT pk_travel PRIMARY KEY (travel_id),
+   CONSTRAINT fk_travel_on_user FOREIGN KEY (user_id) REFERENCES app_user (user_id)
+);

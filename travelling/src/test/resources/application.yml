@@ -1,5 +1,3 @@
-debug: false
-
 server:
   error:
     include-message: always
@@ -10,7 +8,7 @@ server:
 logging:
   level:
     "[org.hibernate.SQL]": DEBUG
-    "[org.hibernate.type.descriptor.sql]": TRACE
+    "[org.hibernate.type.descriptor.sql.BasicBinder]": TRACE
 
 spring:
   datasource:
@@ -25,8 +23,7 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         "[format_sql]": true
-    show-sql: true
-
+        "[use_sql_comments]": false
   sql:
     init:
       mode: always
