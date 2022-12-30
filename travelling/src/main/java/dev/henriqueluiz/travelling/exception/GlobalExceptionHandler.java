@@ -1,6 +1,7 @@
 package dev.henriqueluiz.travelling.exception;
 
 import dev.henriqueluiz.travelling.exception.entity.*;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatusCode;
@@ -24,6 +25,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     @Nullable
     @Override
+    @SuppressWarnings("NullableProblems")
     protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex,
         HttpHeaders headers, HttpStatusCode status, WebRequest request) {
         
@@ -47,6 +49,16 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         body.setStatus(404); 
         body.setTitle("Bad Request");
         body.setDetails("Role not found: " + request.getParameter("role"));      
+        return super.handleExceptionInternal(ex, body, new HttpHeaders(), NOT_FOUND, request);
+    }
+
+    @Nullable
+    @ExceptionHandler(value = EntityNotFoundException.class)
+    protected ResponseEntity<Object> handleMethodEntityNotFound(RuntimeException ex, WebRequest request) {
+        AbstractExceptionBody body = new AbstractExceptionBody();
+        body.setStatus(404);
+        body.setTitle("Bad Request");
+        body.setDetails("Entity not found");
         return super.handleExceptionInternal(ex, body, new HttpHeaders(), NOT_FOUND, request);
     }
 

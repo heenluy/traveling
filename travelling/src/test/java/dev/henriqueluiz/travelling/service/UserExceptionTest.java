@@ -10,7 +10,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import dev.henriqueluiz.travelling.exception.entity.RoleNotFoundException;
 
 @SpringBootTest
-public class UserServiceFailuresTest {
+public class UserExceptionTest {
     
     @Autowired
     private UserService service;
