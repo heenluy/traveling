@@ -27,6 +27,9 @@ public class TravelServiceImpl implements TravelService {
 
     @Override
     public Travel saveTravel(Travel entity) {
+        if(Objects.isNull(entity.getUser())) {
+            throw new IllegalStateException("User cannot be null");
+        }
         LOG.debug("Saving travel for user: '{}'", entity.getUser().getEmail());
         return travelRepo.save(entity);
     }
