@@ -55,6 +55,8 @@ public class SecurityConfig {
                     .requestMatchers("/users/save", "/roles/add-to-user").permitAll()
                     .requestMatchers("/token", "/refresh", "/actuator/**").permitAll()
                     .requestMatchers("/users/get-by-email", "/roles/save").hasAuthority("SCOPE_manager")
+                    .requestMatchers("/travels/save", "/travels/update", "/travels/delete").hasAuthority("SCOPE_write")
+                    .requestMatchers("/travels/get/**").hasAuthority("SCOPE_read")
                     .anyRequest().authenticated())
             .build();
     }
