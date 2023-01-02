@@ -1,5 +1,6 @@
 package dev.henriqueluiz.travelling.service;
 
+import dev.henriqueluiz.travelling.model.mapper.TokenResponse;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -15,7 +16,6 @@ import org.springframework.test.context.jdbc.Sql;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Collections;
-import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.AFTER_TEST_METHOD;
@@ -40,13 +40,20 @@ class JwtServiceTest {
     @WithMockUser(value = USERNAME, password = PASSWORD)
     void givenAuthentication_whenCall_thenTokensAreExpected() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Map<String, String> tokens = jwtService.getAccessToken(authentication);
-        String subject = decoder.decode(tokens.get("access_token")).getSubject();
+        TokenResponse tokens = jwtService.getAccessToken(authentication);
+
+        String accessToken = (String) tokens.getAccessToken().get("token");
+        String subject1 = decoder.decode(accessToken).getSubject();
+
+        String refreshToken = (String) tokens.getRefreshToken().get("token");
+        String subject2 = decoder.decode(refreshToken).getSubject();
 
         assertThat(tokens).isNotNull();
-        assertThat(tokens.containsKey("access_token")).isEqualTo(true);
-        assertThat(tokens.containsKey("refresh_token")).isEqualTo(true);
-        assertThat(subject).isEqualTo(USERNAME);
+        assertThat(tokens.getType()).isEqualTo("bearer");
+        assertThat(subject1).isEqualTo(USERNAME);
+        assertThat(subject2).isEqualTo(USERNAME);
+        assertThat(tokens.getAccessToken().get("exp")).isNotNull();
+        assertThat(tokens.getRefreshToken().get("exp")).isNotNull();
     }
 
     @Test
@@ -68,13 +75,20 @@ class JwtServiceTest {
                 .claim("scope", Collections.emptyList())
                 .build();
 
-        String refreshToken = encoder.encode(JwtEncoderParameters.from(claimsSet)).getTokenValue();
-        Map<String, String> tokens = jwtService.refreshToken(refreshToken);
-        String subject = decoder.decode(tokens.get("access_token")).getSubject();
+        String refresh = encoder.encode(JwtEncoderParameters.from(claimsSet)).getTokenValue();
+        TokenResponse tokens = jwtService.refreshToken(refresh);
+
+        String accessToken = (String) tokens.getAccessToken().get("token");
+        String subject1 = decoder.decode(accessToken).getSubject();
+
+        String refreshToken = (String) tokens.getRefreshToken().get("token");
+        String subject2 = decoder.decode(refreshToken).getSubject();
 
         assertThat(tokens).isNotNull();
-        assertThat(tokens.containsKey("access_token")).isEqualTo(true);
-        assertThat(tokens.containsKey("refresh_token")).isEqualTo(true);
-        assertThat(subject).isEqualTo(USERNAME);
+        assertThat(tokens.getType()).isEqualTo("bearer");
+        assertThat(subject1).isEqualTo(USERNAME);
+        assertThat(subject2).isEqualTo(USERNAME);
+        assertThat(tokens.getAccessToken().get("exp")).isNotNull();
+        assertThat(tokens.getRefreshToken().get("exp")).isNotNull();
     }
 }

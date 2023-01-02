@@ -24,6 +24,7 @@ import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.AFTER_TES
 import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.BEFORE_TEST_METHOD;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -59,9 +60,11 @@ class AuthApiTest {
                         .contentType(APPLICATION_JSON_VALUE)
                         .accept(APPLICATION_JSON)
                         .content(request));
-        result.andExpect(status().isAccepted());
+        result.andExpect(status().isOk());
+        result.andExpect(jsonPath("$.type").value("bearer"));
         result.andExpect(jsonPath("$.access_token").exists());
         result.andExpect(jsonPath("$.refresh_token").exists());
+        result.andDo(print());
     }
 
     @Test
@@ -91,8 +94,10 @@ class AuthApiTest {
                         .contentType(APPLICATION_JSON_VALUE)
                         .accept(APPLICATION_JSON)
                         .content(request));
-        result.andExpect(status().isAccepted());
+        result.andExpect(status().isOk());
+        result.andExpect(jsonPath("$.type").value("bearer"));
         result.andExpect(jsonPath("$.access_token").exists());
         result.andExpect(jsonPath("$.refresh_token").exists());
+        result.andDo(print());
     }
 }
