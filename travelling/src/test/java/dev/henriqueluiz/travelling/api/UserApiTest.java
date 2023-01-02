@@ -7,9 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
@@ -23,6 +21,7 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.AFTER_TEST_METHOD;
 import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.BEFORE_TEST_METHOD;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -35,9 +34,6 @@ public class UserApiTest {
 
     @Autowired
     ObjectMapper mapper;
-
-    @MockBean
-    JwtDecoder jwtDecoder;
 
     @Test
     @Sql(
@@ -95,13 +91,13 @@ public class UserApiTest {
     )
     void givenRoleNameAndUserEmail_whenCall_thenAcceptedResponseStatusIsExpected() throws Exception {
         ResultActions result = mvc.perform(
-                put("/roles/add-to-user")
+                put("/roles/add")
                         .contentType(APPLICATION_JSON_VALUE)
                         .accept(APPLICATION_JSON)
                         .param("role", "test")
                         .param("email", "test@mail.dev"));
 
-        result.andExpect(status().isAccepted());
+        result.andExpect(status().isOk());
     }
 
     @Test
@@ -117,7 +113,7 @@ public class UserApiTest {
         String firstName = "Henrique";
         String email = "test@mail.dev";
         ResultActions result = mvc.perform(
-                get("/users/get-by-email")
+                get("/users/get/by")
                         .contentType(APPLICATION_JSON_VALUE)
                         .accept(APPLICATION_JSON)
                         .param("email", email)
@@ -126,5 +122,26 @@ public class UserApiTest {
         result.andExpect(status().isOk());
         result.andExpect(jsonPath("$.firstName").value(firstName));
         result.andExpect(jsonPath("$.email").value(email));
+    }
+
+    @Test
+    @Sql(
+            scripts = { "insertRole.sql" },
+            executionPhase = BEFORE_TEST_METHOD
+    )
+    @Sql(
+            scripts = { "deleteRole.sql" },
+            executionPhase = AFTER_TEST_METHOD
+    )
+    void whenCall_thenListOfRolesIsExpected() throws Exception {
+        ResultActions result = mvc.perform(
+                get("/roles/get/all")
+                        .contentType(APPLICATION_JSON_VALUE)
+                        .accept(APPLICATION_JSON));
+
+        result.andExpect(status().isOk());
+        result.andExpect(jsonPath("$._embedded.allRoles").isNotEmpty());
+        result.andExpect(jsonPath("$._embedded.allRoles[0].name").value("test"));
+        result.andDo(print());
     }
 }

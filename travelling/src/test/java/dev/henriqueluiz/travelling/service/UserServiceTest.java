@@ -1,19 +1,19 @@
 package dev.henriqueluiz.travelling.service;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatCode;
-import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.AFTER_TEST_METHOD;
-import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.BEFORE_TEST_METHOD;
-
-import java.util.Collections;
-
+import dev.henriqueluiz.travelling.model.AppRole;
+import dev.henriqueluiz.travelling.model.AppUser;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.jdbc.Sql;
 
-import dev.henriqueluiz.travelling.model.AppRole;
-import dev.henriqueluiz.travelling.model.AppUser;
+import java.util.Collections;
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.AFTER_TEST_METHOD;
+import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.BEFORE_TEST_METHOD;
 
 @SpringBootTest
 public class UserServiceTest {
@@ -82,5 +82,21 @@ public class UserServiceTest {
     void givenRoleNameAndUserEmail_whenCall_thenNoErrorShouldOccur() {
         assertThatCode(() -> userService.addRolesToUser("test", "test@mail.dev"))
             .doesNotThrowAnyException();
+    }
+
+    @Test
+    @Sql(
+            scripts = { "insertRole.sql" },
+            executionPhase = BEFORE_TEST_METHOD
+    )
+    @Sql(
+            scripts = { "deleteRole.sql" },
+            executionPhase = AFTER_TEST_METHOD
+    )
+    void whenCall_thenListOfRolesIsExpected() {
+        List<AppRole> result = userService.getAllRoles();
+        assertThat(result).isNotNull();
+        assertThat(result).isNotEmpty();
+        assertThat(result.size()).isGreaterThan(0);
     }
 }
