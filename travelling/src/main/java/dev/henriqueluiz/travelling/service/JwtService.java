@@ -1,30 +1,24 @@
 package dev.henriqueluiz.travelling.service;
 
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.stream.Collectors;
-
+import dev.henriqueluiz.travelling.exception.entity.InvalidTokenException;
+import dev.henriqueluiz.travelling.model.AppUser;
+import dev.henriqueluiz.travelling.model.mapper.TokenResponse;
+import dev.henriqueluiz.travelling.repository.UserRepo;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.security.oauth2.jwt.JwtClaimsSet;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
-import org.springframework.security.oauth2.jwt.JwtEncoder;
-import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
+import org.springframework.security.oauth2.jwt.*;
 import org.springframework.stereotype.Service;
 
-import dev.henriqueluiz.travelling.exception.entity.InvalidTokenException;
-import dev.henriqueluiz.travelling.model.AppUser;
-import dev.henriqueluiz.travelling.repository.UserRepo;
-import lombok.RequiredArgsConstructor;
+import java.time.Instant;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static java.time.temporal.ChronoUnit.DAYS;
+import static java.time.temporal.ChronoUnit.MINUTES;
 
 @Service
 @RequiredArgsConstructor
@@ -35,7 +29,7 @@ public class JwtService {
     private final JwtDecoder decoder;
     private final UserRepo userRepo;
 
-    public Map<String, String> getAccessToken(Authentication authentication) {
+    public TokenResponse getAccessToken(Authentication authentication) {
         LOG.debug("Generating tokens to: '{}'", authentication.getName());
         Instant now = Instant.now();       
         List<String> scope = authentication.getAuthorities().stream()
@@ -45,7 +39,7 @@ public class JwtService {
         JwtClaimsSet accessClaims = JwtClaimsSet.builder()
             .issuer("self")
             .issuedAt(now)
-            .expiresAt(now.plus(25, ChronoUnit.MINUTES))
+            .expiresAt(now.plus(25, MINUTES))
             .subject(authentication.getName())
             .claim("scope", scope)
             .build();
@@ -53,7 +47,7 @@ public class JwtService {
         JwtClaimsSet refreshClaims = JwtClaimsSet.builder()
             .issuer("self")
             .issuedAt(now)
-            .expiresAt(now.plus(1, ChronoUnit.DAYS))
+            .expiresAt(now.plus(1, DAYS))
             .subject(authentication.getName())
             .claim("scope", Collections.emptyList())
             .build();
@@ -63,14 +57,16 @@ public class JwtService {
         
         String refreshToken = this.encoder
             .encode(JwtEncoderParameters.from(refreshClaims)).getTokenValue();
-            
-        Map<String, String> tokens = new HashMap<>();
-        tokens.put("access_token", accessToken);
-        tokens.put("refresh_token", refreshToken);
-        return tokens;
+
+        return buildTokenResponse(
+                accessToken,
+                refreshToken,
+                accessClaims.getExpiresAt(),
+                refreshClaims.getExpiresAt()
+        );
     }
 
-    public Map<String, String> refreshToken(String token) {    
+    public TokenResponse refreshToken(String token) {
         AppUser user = getUserByToken(token);
         LOG.debug("Refreshing tokens to: '{}'", user.getEmail());
         
@@ -80,7 +76,7 @@ public class JwtService {
         JwtClaimsSet accessClaims = JwtClaimsSet.builder()
             .issuer("self")
             .issuedAt(now)
-            .expiresAt(now.plus(25, ChronoUnit.MINUTES))
+            .expiresAt(now.plus(25, MINUTES))
             .subject(user.getEmail())
             .claim("scope", scope)
             .build();
@@ -88,7 +84,7 @@ public class JwtService {
         JwtClaimsSet refreshClaims = JwtClaimsSet.builder()
             .issuer("self")
             .issuedAt(now)
-            .expiresAt(now.plus(1, ChronoUnit.DAYS))
+            .expiresAt(now.plus(1, DAYS))
             .subject(user.getEmail())
             .claim("scope", Collections.emptyList())
             .build();
@@ -98,11 +94,13 @@ public class JwtService {
         
         String refreshToken = this.encoder
             .encode(JwtEncoderParameters.from(refreshClaims)).getTokenValue();
-        
-        Map<String, String> tokens = new HashMap<>();
-        tokens.put("access_token", accessToken);
-        tokens.put("refresh_token", refreshToken);    
-        return tokens;
+
+        return buildTokenResponse(
+                accessToken,
+                refreshToken,
+                accessClaims.getExpiresAt(),
+                refreshClaims.getExpiresAt()
+        );
     }
 
     private AppUser getUserByToken(String token) {
@@ -118,5 +116,16 @@ public class JwtService {
             LOG.error("User not found: '{}'", email);
             return new UsernameNotFoundException(String.format("User not found: '%s'", email));
         });
+    }
+
+    private TokenResponse buildTokenResponse(String access, String refresh, Instant minutes, Instant days) {
+        Map<String, Object> accessToken = new HashMap<>(2);
+        accessToken.put("token", access);
+        accessToken.put("exp", minutes);
+
+        Map<String, Object> refreshToken = new HashMap<>(2);
+        refreshToken.put("token", refresh);
+        refreshToken.put("exp", days);
+        return new TokenResponse("bearer", accessToken, refreshToken);
     }
 }
