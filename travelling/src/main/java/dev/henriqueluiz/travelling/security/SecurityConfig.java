@@ -1,7 +1,12 @@
 package dev.henriqueluiz.travelling.security;
 
-import static org.springframework.security.config.http.SessionCreationPolicy.STATELESS;
-
+import com.nimbusds.jose.jwk.JWK;
+import com.nimbusds.jose.jwk.JWKSet;
+import com.nimbusds.jose.jwk.RSAKey;
+import com.nimbusds.jose.jwk.source.ImmutableJWKSet;
+import com.nimbusds.jose.jwk.source.JWKSource;
+import com.nimbusds.jose.proc.SecurityContext;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -20,14 +25,8 @@ import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
-import com.nimbusds.jose.jwk.JWK;
-import com.nimbusds.jose.jwk.JWKSet;
-import com.nimbusds.jose.jwk.RSAKey;
-import com.nimbusds.jose.jwk.source.ImmutableJWKSet;
-import com.nimbusds.jose.jwk.source.JWKSource;
-import com.nimbusds.jose.proc.SecurityContext;
-
-import lombok.RequiredArgsConstructor;
+import static org.springframework.http.HttpMethod.GET;
+import static org.springframework.security.config.http.SessionCreationPolicy.STATELESS;
 
 @Configuration
 @EnableWebSecurity
@@ -52,9 +51,10 @@ public class SecurityConfig {
             .sessionManagement(session -> session.sessionCreationPolicy(STATELESS))
             .authorizeHttpRequests(
                 auth -> auth
-                    .requestMatchers("/users/save", "/roles/add-to-user").permitAll()
+                    .requestMatchers(GET, "/").permitAll()
+                    .requestMatchers("/users/save", "/roles/get/all", "/roles/add").permitAll()
                     .requestMatchers("/token", "/refresh", "/actuator/**").permitAll()
-                    .requestMatchers("/users/get-by-email", "/roles/save").hasAuthority("SCOPE_manager")
+                    .requestMatchers("/users/get/**", "/roles/save").hasAuthority("SCOPE_manager")
                     .requestMatchers("/travels/save", "/travels/update", "/travels/delete").hasAuthority("SCOPE_write")
                     .requestMatchers("/travels/get/**").hasAuthority("SCOPE_read")
                     .anyRequest().authenticated())
