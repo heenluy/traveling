@@ -4,13 +4,16 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
+import org.springframework.hateoas.RepresentationModel;
+import org.springframework.hateoas.server.core.Relation;
 
 import static jakarta.persistence.GenerationType.SEQUENCE;
 
 @Entity
+@Relation(collectionRelation = "allRoles")
 @NoArgsConstructor
 @AllArgsConstructor
-public class AppRole {
+public class AppRole extends RepresentationModel<AppRole> {
     
     @Id
     @GeneratedValue(

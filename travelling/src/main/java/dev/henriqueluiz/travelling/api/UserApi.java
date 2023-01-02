@@ -1,26 +1,25 @@
 package dev.henriqueluiz.travelling.api;
 
+import dev.henriqueluiz.travelling.model.AppRole;
+import dev.henriqueluiz.travelling.model.AppUser;
+import dev.henriqueluiz.travelling.model.mapper.AbstractModel;
+import dev.henriqueluiz.travelling.model.mapper.UserRequest;
+import dev.henriqueluiz.travelling.model.mapper.UserResponse;
+import dev.henriqueluiz.travelling.service.UserService;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.hateoas.CollectionModel;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
-import dev.henriqueluiz.travelling.model.mapper.UserRequest;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
-
-import dev.henriqueluiz.travelling.model.AppRole;
-import dev.henriqueluiz.travelling.model.AppUser;
-import dev.henriqueluiz.travelling.model.mapper.UserResponse;
-import dev.henriqueluiz.travelling.service.UserService;
-import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 
 @RestController
@@ -28,7 +27,7 @@ import lombok.RequiredArgsConstructor;
 public class UserApi {
     private final UserService userService;
 
-    @PostMapping("users/save")
+    @PostMapping("/users/save")
     public ResponseEntity<UserResponse> saveUser(@RequestBody @Valid UserRequest body) {
         AppUser user = userService.saveUser(requestToEntity(body));
         URI uri = URI.create(
@@ -38,13 +37,14 @@ public class UserApi {
                 .path("/users/save")
                 .toUriString()
         );
-
         List<String> authorities = user.getAuthorities().stream().toList();
-        UserResponse userResponse = new UserResponse(user.getFirstName(), user.getLastName(), user.getEmail(), authorities);
-        return ResponseEntity.created(uri).body(userResponse);
+        UserResponse response = new UserResponse(user.getFirstName(), user.getLastName(), user.getEmail(), authorities);
+        response.add(linkTo(methodOn(UserApi.class).getRoles()).withSelfRel());
+        response.add(linkTo(methodOn(UserApi.class).addRole(null, null)).withSelfRel());
+        return ResponseEntity.created(uri).body(response);
     }
 
-    @PostMapping("roles/save")
+    @PostMapping("/roles/save")
     public ResponseEntity<AppRole> saveRole(@RequestBody @Valid AppRole entity) {
         AppRole role = userService.saveRole(entity);
         URI uri = URI.create(
@@ -54,22 +54,33 @@ public class UserApi {
                 .path("/roles/save")
                 .toUriString()
         );
+        role.add(linkTo(methodOn(UserApi.class).addRole(null, null)).withSelfRel());
+        role.add(linkTo(methodOn(UserApi.class).getRoles()).withSelfRel());
         return ResponseEntity.created(uri).body(role);
     }
     
     
-    @PutMapping("roles/add-to-user")
-    public ResponseEntity<Void> addRole(@RequestParam String role, @RequestParam String email) {
+    @PutMapping("/roles/add")
+    public ResponseEntity<AbstractModel> addRole(@RequestParam String role, @RequestParam String email) {
         userService.addRolesToUser(role, email);
-        return ResponseEntity.accepted().build();
+        var model = new AbstractModel();
+        model.add(linkTo(methodOn(AuthApi.class).accessToken(null)).withRel("GetAccessToken"));
+        return ResponseEntity.ok(model);
     }
     
-    @GetMapping("users/get-by-email")
-    public ResponseEntity<UserResponse> getMethodName(@RequestParam String email) {
+    @GetMapping("/roles/get/all")
+    public ResponseEntity<CollectionModel<AppRole>> getRoles() {
+        List<AppRole> roles = userService.getAllRoles();
+        return ResponseEntity.ok(CollectionModel.of(roles));
+    }
+
+    @GetMapping("/users/get/by")
+    public ResponseEntity<UserResponse> getUserByEmail(@RequestParam String email) {
         AppUser user = userService.getUserByEmail(email);
         List<String> authorities = user.getAuthorities().stream().toList();
-        UserResponse userResponse = new UserResponse(user.getFirstName(), user.getLastName(), user.getEmail(), authorities);
-        return ResponseEntity.ok(userResponse);
+        UserResponse response = new UserResponse(user.getFirstName(), user.getLastName(), user.getEmail(), authorities);
+        response.add(linkTo(methodOn(UserApi.class).getRoles()).withSelfRel());
+        return ResponseEntity.ok(response);
     }
 
     private AppUser requestToEntity(UserRequest request) {

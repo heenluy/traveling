@@ -1,12 +1,6 @@
 package dev.henriqueluiz.travelling.service;
 
 import dev.henriqueluiz.travelling.exception.entity.RoleNotAllowedException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-
 import dev.henriqueluiz.travelling.exception.entity.RoleNotFoundException;
 import dev.henriqueluiz.travelling.model.AppRole;
 import dev.henriqueluiz.travelling.model.AppUser;
@@ -14,6 +8,13 @@ import dev.henriqueluiz.travelling.repository.RoleRepo;
 import dev.henriqueluiz.travelling.repository.UserRepo;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 @Transactional
@@ -60,7 +61,13 @@ public class UserServiceImpl implements UserService {
         user.getAuthorities().add(role.getName());
         LOG.debug("Role has been added successfully");
     }
-    
+
+    @Override
+    public List<AppRole> getAllRoles() {
+        LOG.debug("Fetching all roles");
+        return roleRepo.findAll();
+    }
+
     @Override
     public AppUser getUserByEmail(String email) {
         LOG.debug("Fetching user: '{}'", email);
